@@ -85,26 +85,30 @@ public class BankingServiceImpl implements BankingService {
     @Override
     public void transfer(UUID from, UUID to, double amount) {
         try {
-            Saving fromSaving = savingRepository.findByCustomerId(from);
+            Optional<Customer> fromCustomer = customerRepository.findById(from);
             Optional<Customer> toCustomer = customerRepository.findById(to);
 
             //check if the customer exists
             if (toCustomer.isEmpty()) {
                 throw new InternalServerErrorException("Customer not found");
             }
+
+            if (fromCustomer.isEmpty()) {
+                throw new InternalServerErrorException("Customer not found");
+            }
             //check if the saving account exists
-            if (fromSaving.getAmount() < amount) {
+            if (fromCustomer.get().getBalance() < amount) {
                 throw new Exception("Insufficient funds in saving account");
             }
-            fromSaving.setAmount(fromSaving.getAmount() - amount);
+            fromCustomer.get().setBalance(fromCustomer.get().getBalance() - amount);
 
             toCustomer.get().setBalance(toCustomer.get().getBalance() + amount);
-            savingRepository.save(fromSaving);
+            customerRepository.save(fromCustomer.get());
             customerRepository.save(toCustomer.get());
-            emailService.sendTransactionEmail(fromSaving.getCustomer(), toCustomer.get(), amount);
+            emailService.sendTransactionEmail(fromCustomer.get(), toCustomer.get(), amount);
 
             Message message = new Message();
-            message.setCustomer(fromSaving.getCustomer());
+            message.setCustomer(fromCustomer.get());
             message.setCreatedDateTime(new Date());
             message.setMessage("Transferred " + amount + " to " + toCustomer.get().getFirstName() + " " + toCustomer.get().getLastName());
 
