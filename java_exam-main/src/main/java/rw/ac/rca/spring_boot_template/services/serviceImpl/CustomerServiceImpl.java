@@ -27,7 +27,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer1.setBalance(createCustomerDTO.getBalance());
             customer1.setAccount(createCustomerDTO.getAccount());
 
-            return customer1;
+            return customerRepository.save(customer1);
         }catch (Exception e) {
             e.printStackTrace();
             throw new InternalServerErrorException("Internal Server Error");

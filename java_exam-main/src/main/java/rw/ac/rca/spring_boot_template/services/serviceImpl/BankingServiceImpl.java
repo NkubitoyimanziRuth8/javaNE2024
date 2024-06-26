@@ -97,6 +97,7 @@ public class BankingServiceImpl implements BankingService {
                 throw new Exception("Insufficient funds in saving account");
             }
             fromSaving.setAmount(fromSaving.getAmount() - amount);
+
             toCustomer.get().setBalance(toCustomer.get().getBalance() + amount);
             savingRepository.save(fromSaving);
             customerRepository.save(toCustomer.get());
